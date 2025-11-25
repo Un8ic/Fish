@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const scoreStat = document.getElementById('score-stat');
     const oxygenStat = document.getElementById('oxygen-stat');
     const targetStat = document.getElementById('target-stat');
+    const controlInfo = document.getElementById('control-info');
+    const restartInfo = document.getElementById('restart-info');
     
     // Мобильные кнопки управления
     const upBtn = document.getElementById('upBtn');
@@ -25,14 +27,30 @@ document.addEventListener('DOMContentLoaded', function() {
         restartGame();
     });
     
+    // Определяем тип устройства
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Настройка информации в зависимости от устройства
+    if (isMobile) {
+        controlInfo.textContent = 'Собирайте сокровища (💰) и избегайте акул!';
+        restartInfo.textContent = 'Коснитесь станции 🎯 справа для кислорода';
+        restartBtn.style.display = 'block';
+    } else {
+        controlInfo.textContent = 'Собирайте сокровища (10-100 очков) и избегайте акул! Подплывайте к станции справа для пополнения кислорода.';
+        restartInfo.textContent = 'Управление: стрелки или WASD | Нажмите R для перезапуска';
+        restartBtn.style.display = 'none';
+    }
+    
     // Цвета
     const OCEAN_BLUE = '#2e86ab';
     const DARK_BLUE = '#1b4f72';
     const SAND_COLOR = '#e6bc57';
     const CORAL_COLOR = '#ff6b6b';
     
-    // Проверка типа устройства
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Переменные для плавной анимации
+    let lastTime = 0;
+    const fps = 60;
+    const frameInterval = 1000 / fps;
     
     // Класс водолаза
     class Diver {
@@ -340,7 +358,9 @@ document.addEventListener('DOMContentLoaded', function() {
         treasureTimer = 0;
         sharkTimer = 0;
         keys = {};
-        restartBtn.style.display = 'none';
+        if (!isMobile) {
+            restartBtn.style.display = 'none';
+        }
         updateStats();
     }
     
@@ -444,15 +464,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         ctx.font = '16px Arial';
-        ctx.fillText('Нажмите "Перезапуск"', canvas.width / 2, canvas.height / 2 + 30);
+        if (isMobile) {
+            ctx.fillText('Нажмите "Перезапуск"', canvas.width / 2, canvas.height / 2 + 30);
+        } else {
+            ctx.fillText('Нажмите R для перезапуска', canvas.width / 2, canvas.height / 2 + 30);
+        }
         ctx.textAlign = 'left';
         
-        restartBtn.style.display = 'block';
-        restartBtn.textContent = '🔄 Перезапуск';
+        if (isMobile) {
+            restartBtn.style.display = 'block';
+        }
     }
     
     // Настройка мобильного управления
     function setupMobileControls() {
+        if (!isMobile) return;
+        
         const mobileButtons = {
             'ArrowUp': upBtn,
             'ArrowDown': downBtn,
@@ -461,20 +488,19 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         Object.entries(mobileButtons).forEach(([key, button]) => {
-            button.addEventListener('touchstart', (e) => {
+            const handleStart = (e) => {
                 e.preventDefault();
                 keys[key] = true;
-            });
+            };
             
-            button.addEventListener('touchend', (e) => {
+            const handleEnd = (e) => {
                 e.preventDefault();
                 keys[key] = false;
-            });
+            };
             
-            button.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                keys[key] = false;
-            });
+            button.addEventListener('touchstart', handleStart);
+            button.addEventListener('touchend', handleEnd);
+            button.addEventListener('touchcancel', handleEnd);
         });
     }
     
@@ -494,16 +520,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('game-container');
         const maxWidth = Math.min(800, container.clientWidth - 20);
         
-        // Для мобильных устройств используем большую часть экрана
         let maxHeight;
         if (window.innerHeight > window.innerWidth) {
             // Портретная ориентация
-            maxHeight = Math.min(500, window.innerHeight * 0.6);
+            maxHeight = Math.min(500, window.innerHeight * 0.5);
         } else {
             // Ландшафтная ориентация
-            maxHeight = Math.min(400, window.innerHeight * 0.8);
+            maxHeight = Math.min(400, window.innerHeight * 0.7);
         }
         
+        // Устанавливаем фиксированный размер
         canvas.width = maxWidth;
         canvas.height = maxHeight;
         
@@ -516,9 +542,17 @@ document.addEventListener('DOMContentLoaded', function() {
         diver.y = canvas.height - 80;
     }
     
-    // Основной игровой цикл
-    function gameLoop() {
+    // Основной игровой цикл с контролем FPS
+    function gameLoop(timestamp) {
+        // Контроль FPS для плавной анимации
+        if (timestamp - lastTime < frameInterval) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+        lastTime = timestamp;
+        
         // Очистка экрана
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = OCEAN_BLUE;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
@@ -602,9 +636,9 @@ document.addEventListener('DOMContentLoaded', function() {
         requestAnimationFrame(gameLoop);
     }
     
-    // Обработчик перезапуска
+    // Обработчик перезапуска для компьютера
     window.addEventListener('keydown', (e) => {
-        if ((gameOver || gameWon) && (e.key === 'r' || e.key === 'R')) {
+        if (!isMobile && (gameOver || gameWon) && (e.key === 'r' || e.key === 'R')) {
             restartGame();
         }
     });
@@ -614,14 +648,8 @@ document.addEventListener('DOMContentLoaded', function() {
     resizeCanvas();
     setupMobileControls();
     setupKeyboardControls();
-    
-    // Обновляем информацию
-    const controlInfo = document.getElementById('control-info');
-    const restartInfo = document.getElementById('restart-info');
-    
-    controlInfo.textContent = 'Собирайте сокровища (💰) и избегайте акул!';
-    restartInfo.textContent = 'Коснитесь станции 🎯 справа для кислорода';
+    updateStats();
     
     // Запуск игры
-    gameLoop();
+    requestAnimationFrame(gameLoop);
 });
