@@ -1,0 +1,305 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background: linear-gradient(to bottom, #1a2980, #26d0ce);
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    touch-action: manipulation;
+}
+
+/* Стили для главной страницы */
+#main-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #1a2980, #26d0ce);
+    z-index: 20;
+}
+
+.main-title {
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.game-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.game-option {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    border-radius: 15px;
+    padding: 1.5rem 2.5rem;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 250px;
+    backdrop-filter: blur(5px);
+}
+
+.game-option:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Стили для аквариума */
+#aquarium-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 10px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    z-index: 10;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+#aquarium {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.fish {
+    position: absolute;
+    font-size: 40px;
+    user-select: none;
+    transition: transform 0.2s;
+    z-index: 2;
+}
+
+.food {
+    position: absolute;
+    font-size: 20px;
+    user-select: none;
+    z-index: 1;
+    animation: fall linear forwards;
+}
+
+#feedBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 12px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+}
+
+#backBtn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 12px 16px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+}
+
+#feedBtn:hover, #backBtn:hover {
+    opacity: 0.9;
+    transform: scale(0.98);
+}
+
+.bubble {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float linear infinite;
+    z-index: 0;
+}
+
+.click-bubble {
+    position: absolute;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    animation: bubble-expand 0.5s ease-out forwards;
+}
+
+@keyframes float {
+    from {
+        transform: translateY(100vh);
+    }
+    to {
+        transform: translateY(-100px);
+    }
+}
+
+@keyframes fall {
+    from {
+        transform: translateY(-20px);
+    }
+    to {
+        transform: translateY(100vh);
+    }
+}
+
+@keyframes bubble-expand {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.8;
+    }
+    100% {
+        width: 150px;
+        height: 150px;
+        opacity: 0;
+    }
+}
+
+.info {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 10;
+    max-width: calc(100% - 20px);
+}
+
+.footer {
+    padding: 8px;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    z-index: 10;
+    font-size: 0.9rem;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2rem;
+    }
+    
+    .game-option {
+        font-size: 1.2rem;
+        padding: 1rem 2rem;
+        min-width: 200px;
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .fish {
+        font-size: 30px;
+    }
+    
+    #feedBtn, #backBtn {
+        padding: 10px 14px;
+        font-size: 14px;
+        top: 5px;
+    }
+    
+    .info {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .footer {
+        font-size: 0.8rem;
+    }
+    
+    /* Адаптация для игры с рыбкой */
+    #game-canvas {
+        width: 95vw !important;
+        height: auto !important;
+        max-height: 70vh;
+    }
+    
+    .game-info {
+        font-size: 14px !important;
+        padding: 0 10px;
+    }
+    
+    .controls {
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .game-option {
+        font-size: 1.1rem;
+        padding: 0.8rem 1.5rem;
+        min-width: 180px;
+    }
+    
+    .fish {
+        font-size: 24px;
+    }
+    
+    #feedBtn, #backBtn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .info {
+        font-size: 11px;
+    }
+    
+    .game-info {
+        font-size: 12px !important;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-height: 500px) {
+    .header, .footer {
+        display: none;
+    }
+}

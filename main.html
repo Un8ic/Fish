@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аквариумные игры</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="main-page">
+        <h1 class="main-title">Подводные приключения</h1>
+        <div class="game-selection">
+            <div class="game-option" id="aquarium-game">
+                <span style="font-size: 2rem; margin-right: 10px;">🐠🐟🐡</span><br>
+                Твой аквариум
+            </div>
+            <div class="game-option" id="fish-game">
+                <span style="font-size: 2rem; margin-right: 10px;">🐠🏃‍♂️🐙</span><br>
+                Погнали
+            </div>
+            <div class="game-option" id="treasure-game">
+                <span style="font-size: 2rem; margin-right: 10px;">🤿💰🦈</span><br>
+                Подводник
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const aquariumGameBtn = document.getElementById('aquarium-game');
+            const fishGameBtn = document.getElementById('fish-game');
+            const treasureGameBtn = document.getElementById('treasure-game');
+            
+            aquariumGameBtn.addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            fishGameBtn.addEventListener('click', function() {
+                window.location.href = 'fish-game.html';
+            });
+            
+            treasureGameBtn.addEventListener('click', function() {
+                window.location.href = 'treasure-game.html';
+            });
+        });
+    </script>
+</body>
+</html>

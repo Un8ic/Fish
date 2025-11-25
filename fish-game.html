@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Погнали</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #1a2980, #26d0ce);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        #game-canvas {
+            border: 3px solid #fff;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #40a4df, #1e6ea7);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto;
+        }
+        
+        #backBtn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10;
+        }
+        
+        #restartBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10;
+            display: none; /* Скрыта по умолчанию */
+        }
+        
+        .game-info {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .controls {
+            color: white;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            padding: 0 10px;
+        }
+
+        @media (max-width: 768px) {
+            #game-canvas {
+                width: 100%;
+                max-height: 70vh;
+            }
+            
+            .game-info {
+                font-size: 14px;
+            }
+            
+            .controls {
+                font-size: 12px;
+            }
+            
+            #backBtn, #restartBtn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #backBtn {
+                top: 10px;
+                left: 10px;
+            }
+            
+            #restartBtn {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .game-info {
+                font-size: 12px;
+            }
+        }
+
+        /* На компьютере скрываем кнопку перезапуска */
+        @media (min-width: 769px) {
+            #restartBtn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <button id="backBtn">Назад</button>
+        <button id="restartBtn">Перезапустить</button>
+        <div class="game-info" id="control-info">Загрузка...</div>
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div class="controls" id="restart-info">Нажми R для перезапуска игры</div>
+    </div>
+
+    <script src="fish-game.js"></script>
+    <script>
+        // Обновляем информацию об управлении после загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const controlInfo = document.getElementById('control-info');
+            const restartInfo = document.getElementById('restart-info');
+            
+            if (isMobile) {
+                controlInfo.textContent = 'Касайтесь экрана, чтобы управлять рыбкой! Собирайте монетки и избегайте осьминогов!';
+                restartInfo.textContent = 'Используйте кнопку "Перезапустить" для новой игры';
+            } else {
+                controlInfo.textContent = 'Управление: стрелки ←↑→↓ или WASD | Соберите монетки и избегайте осьминогов!';
+                restartInfo.textContent = 'Нажми R для перезапуска игры';
+            }
+        });
+    </script>
+</body>
+</html>
