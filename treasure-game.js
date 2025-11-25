@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
     
+    // Элементы статистики
+    const scoreStat = document.getElementById('score-stat');
+    const oxygenStat = document.getElementById('oxygen-stat');
+    const targetStat = document.getElementById('target-stat');
+    
     // Мобильные кнопки управления
     const upBtn = document.getElementById('upBtn');
     const downBtn = document.getElementById('downBtn');
@@ -26,43 +31,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const SAND_COLOR = '#e6bc57';
     const CORAL_COLOR = '#ff6b6b';
     
-    // Эмодзи
-    const DIVER_EMOJI = '🧜‍♂️';
-    const TREASURE_EMOJI = '💰';
-    const SHARK_EMOJI = '🦈';
-    const OXYGEN_STATION_EMOJI = '⚡';
-    
     // Проверка типа устройства
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     // Класс водолаза
     class Diver {
         constructor() {
-            this.size = 50;
+            this.width = 35;
+            this.height = 50;
             this.x = canvas.width / 2;
-            this.y = canvas.height - 100;
-            this.speed = 5;
+            this.y = canvas.height - 80;
+            this.speed = 4;
             this.oxygen = 100;
             this.score = 0;
             this.isMoving = false;
-            this.emoji = DIVER_EMOJI;
         }
         
         draw() {
-            ctx.save();
-            ctx.font = `${this.size}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(this.emoji, this.x, this.y);
+            // Тело водолаза
+            ctx.fillStyle = '#FF6B35';
+            ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+            
+            // Шлем
+            ctx.fillStyle = '#4A90E2';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y - this.height/2, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ласты
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(this.x - 20, this.y + this.height/2 - 8, 40, 12);
             
             // Пузырьки дыхания
             if (this.isMoving) {
-                ctx.font = '20px Arial';
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                ctx.fillText('💨', this.x + 20, this.y - 10);
+                ctx.beginPath();
+                ctx.arc(this.x + 12, this.y + 8, 2, 0, Math.PI * 2);
+                ctx.arc(this.x - 4, this.y + 12, 1.5, 0, Math.PI * 2);
+                ctx.arc(this.x + 4, this.y + 16, 3, 0, Math.PI * 2);
+                ctx.fill();
             }
-            
-            ctx.restore();
         }
         
         move(keys) {
@@ -86,34 +94,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Ограничение границами
-            this.x = Math.max(this.size/2, Math.min(canvas.width - this.size/2, this.x));
-            this.y = Math.max(this.size/2, Math.min(canvas.height - this.size/2, this.y));
+            this.x = Math.max(this.width/2, Math.min(canvas.width - this.width/2, this.x));
+            this.y = Math.max(this.height/2, Math.min(canvas.height - this.height/2, this.y));
         }
         
         updateOxygen() {
             if (this.isMoving) {
-                this.oxygen -= 0.1;
+                this.oxygen -= 0.08;
             } else {
-                this.oxygen -= 0.05;
+                this.oxygen -= 0.03;
             }
             
             if (this.oxygen <= 0) {
                 this.oxygen = 0;
-                return true; // Кислород закончился
+                return true;
             }
             return false;
         }
         
         refillOxygen() {
-            this.oxygen = Math.min(100, this.oxygen + 30);
+            this.oxygen = Math.min(100, this.oxygen + 40);
         }
         
         getBounds() {
             return {
-                x: this.x - this.size/2,
-                y: this.y - this.size/2,
-                width: this.size,
-                height: this.size
+                x: this.x - this.width/2,
+                y: this.y - this.height/2,
+                width: this.width,
+                height: this.height
             };
         }
     }
@@ -121,22 +129,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Класс сокровища
     class Treasure {
         constructor() {
-            this.size = 35;
-            this.x = Math.random() * (canvas.width - 100) + 50;
-            this.y = Math.random() * (canvas.height - 200) + 50;
-            this.type = Math.floor(Math.random() * 3); // 0-2 разные типы сокровищ
-            this.value = [10, 25, 50][this.type];
-            this.emoji = TREASURE_EMOJI;
-            // Разные варианты сокровищ для визуального разнообразия
-            this.variants = ['💰', '💎', '🔱'];
+            this.size = 25;
+            this.x = Math.random() * (canvas.width - 80) + 40;
+            this.y = Math.random() * (canvas.height - 150) + 50;
+            this.type = Math.floor(Math.random() * 4);
+            this.value = [10, 25, 50, 100][this.type];
+            this.colors = ['#FFD700', '#C0C0C0', '#FF6B35', '#9B59B6'];
         }
         
         draw() {
             ctx.save();
-            ctx.font = `${this.size}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(this.variants[this.type], this.x, this.y);
+            
+            switch(this.type) {
+                case 0: // Золотая монета
+                    ctx.fillStyle = this.colors[0];
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#B8860B';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size/3, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 1: // Серебряный слиток
+                    ctx.fillStyle = this.colors[1];
+                    ctx.fillRect(this.x - this.size/2, this.y - this.size/4, this.size, this.size/2);
+                    break;
+                    
+                case 2: // Драгоценный камень
+                    ctx.fillStyle = this.colors[2];
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - this.size/2);
+                    ctx.lineTo(this.x + this.size/2, this.y);
+                    ctx.lineTo(this.x, this.y + this.size/2);
+                    ctx.lineTo(this.x - this.size/2, this.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 3: // Жемчужина
+                    ctx.fillStyle = this.colors[3];
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size/4, this.y - this.size/4, this.size/4, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+            
             ctx.restore();
         }
         
@@ -153,28 +198,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Класс акулы
     class Shark {
         constructor() {
-            this.size = 60;
-            this.x = -this.size;
-            this.y = Math.random() * (canvas.height - 100) + 50;
-            this.speed = Math.random() * 2 + 1;
-            this.direction = 1; // 1 - вправо, -1 - влево
-            this.emoji = SHARK_EMOJI;
+            this.width = 70;
+            this.height = 25;
+            this.x = -this.width;
+            this.y = Math.random() * (canvas.height - 80) + 40;
+            this.speed = Math.random() * 1.5 + 1;
+            this.direction = 1;
         }
         
         draw() {
             ctx.save();
-            ctx.font = `${this.size}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
             
-            // Отражаем акулу если движется влево
-            if (this.direction === -1) {
-                ctx.translate(this.x, this.y);
-                ctx.scale(-1, 1);
-                ctx.fillText(this.emoji, 0, 0);
+            // Тело акулы
+            ctx.fillStyle = '#95a5a6';
+            ctx.beginPath();
+            ctx.ellipse(this.x, this.y, this.width/2, this.height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Хвост
+            ctx.fillStyle = '#7f8c8d';
+            ctx.beginPath();
+            if (this.direction === 1) {
+                ctx.moveTo(this.x - this.width/2, this.y);
+                ctx.lineTo(this.x - this.width, this.y - 12);
+                ctx.lineTo(this.x - this.width, this.y + 12);
             } else {
-                ctx.fillText(this.emoji, this.x, this.y);
+                ctx.moveTo(this.x + this.width/2, this.y);
+                ctx.lineTo(this.x + this.width, this.y - 12);
+                ctx.lineTo(this.x + this.width, this.y + 12);
             }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Плавник
+            ctx.fillStyle = '#7f8c8d';
+            ctx.beginPath();
+            ctx.moveTo(this.x + (this.direction * this.width/4), this.y - this.height/2);
+            ctx.lineTo(this.x + (this.direction * this.width/2), this.y - this.height);
+            ctx.lineTo(this.x + (this.direction * this.width/1.5), this.y - this.height/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Глаз
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(this.x + (this.direction * this.width/3), this.y - 4, 2, 0, Math.PI * 2);
+            ctx.fill();
             
             ctx.restore();
         }
@@ -182,22 +251,21 @@ document.addEventListener('DOMContentLoaded', function() {
         move() {
             this.x += this.speed * this.direction;
             
-            // Если акула вышла за границы, меняем направление
-            if (this.x > canvas.width + this.size) {
+            if (this.x > canvas.width + this.width) {
                 this.direction = -1;
-                this.y = Math.random() * (canvas.height - 100) + 50;
-            } else if (this.x < -this.size) {
+                this.y = Math.random() * (canvas.height - 80) + 40;
+            } else if (this.x < -this.width) {
                 this.direction = 1;
-                this.y = Math.random() * (canvas.height - 100) + 50;
+                this.y = Math.random() * (canvas.height - 80) + 40;
             }
         }
         
         getBounds() {
             return {
-                x: this.x - this.size/2,
-                y: this.y - this.size/2,
-                width: this.size,
-                height: this.size
+                x: this.x - this.width/2,
+                y: this.y - this.height/2,
+                width: this.width,
+                height: this.height
             };
         }
     }
@@ -205,31 +273,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Класс станции пополнения кислорода
     class OxygenStation {
         constructor() {
-            this.x = canvas.width - 60;
-            this.y = canvas.height - 60;
-            this.size = 50;
-            this.emoji = OXYGEN_STATION_EMOJI;
+            this.x = canvas.width - 50;
+            this.y = canvas.height - 50;
+            this.size = 35;
         }
         
         draw() {
-            ctx.save();
-            ctx.font = `${this.size}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(this.emoji, this.x, this.y);
+            // Основание станции
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
             
-            // Анимация пузырьков
-            ctx.font = '20px Arial';
+            // Кислородный баллон
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(this.x - 8, this.y - 15, 16, 25);
+            
+            // Шланг
+            ctx.strokeStyle = '#7f8c8d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y - 15);
+            ctx.lineTo(this.x, this.y - 35);
+            ctx.stroke();
+            
+            // Пузырьки
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            const time = Date.now() / 500;
             for (let i = 0; i < 3; i++) {
-                ctx.fillText('💨', 
-                    this.x + Math.sin(time + i) * 15, 
-                    this.y - 30 - i * 8
-                );
+                ctx.beginPath();
+                ctx.arc(this.x + Math.sin(Date.now()/500 + i) * 8, this.y - 40 - i * 4, 2, 0, Math.PI * 2);
+                ctx.fill();
             }
-            
-            ctx.restore();
         }
         
         getBounds() {
@@ -269,6 +341,14 @@ document.addEventListener('DOMContentLoaded', function() {
         sharkTimer = 0;
         keys = {};
         restartBtn.style.display = 'none';
+        updateStats();
+    }
+    
+    // Функция обновления статистики
+    function updateStats() {
+        scoreStat.textContent = `💰: ${diver.score}`;
+        oxygenStat.textContent = `🫁: ${Math.round(diver.oxygen)}%`;
+        targetStat.textContent = `🎯: 500`;
     }
     
     // Функция проверки столкновений
@@ -283,105 +363,96 @@ document.addEventListener('DOMContentLoaded', function() {
     function drawOceanFloor() {
         // Песчаное дно
         ctx.fillStyle = SAND_COLOR;
-        ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+        ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
         
-        // Водоросли (эмодзи)
-        ctx.font = '30px Arial';
+        // Водоросли
         ctx.fillStyle = '#27ae60';
         for (let i = 0; i < 8; i++) {
-            const x = (canvas.width / 8) * i + 40;
-            ctx.fillText('🌿', x, canvas.height - 35);
+            const x = (canvas.width / 8) * i + 15;
+            ctx.beginPath();
+            ctx.moveTo(x, canvas.height - 40);
+            ctx.quadraticCurveTo(x - 8, canvas.height - 80, x, canvas.height - 120);
+            ctx.quadraticCurveTo(x + 8, canvas.height - 80, x, canvas.height - 40);
+            ctx.fill();
         }
         
-        // Ракушки и камни
-        ctx.font = '20px Arial';
-        const decorations = ['🐚', '🪸', '🪨'];
+        // Кораллы
+        ctx.fillStyle = CORAL_COLOR;
         for (let i = 0; i < 6; i++) {
-            const x = (canvas.width / 6) * i + 20;
-            const emoji = decorations[Math.floor(Math.random() * decorations.length)];
-            ctx.fillText(emoji, x, canvas.height - 25);
+            const x = (canvas.width / 6) * i + 30;
+            ctx.beginPath();
+            ctx.arc(x, canvas.height - 40, 12, Math.PI, Math.PI * 2);
+            ctx.fill();
         }
     }
     
     // Функция отрисовки пузырьков
     function drawBubbles() {
-        ctx.font = '20px Arial';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         for (let i = 0; i < 15; i++) {
             const x = Math.random() * canvas.width;
             const y = Math.random() * canvas.height;
-            ctx.fillText('💨', x, y);
+            const size = Math.random() * 3 + 1;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
     
     // Функция отрисовки интерфейса
     function drawUI() {
-        // Счет
-        ctx.fillStyle = 'white';
-        ctx.font = '20px Arial';
-        ctx.fillText(`Сокровища: ${diver.score}`, 10, 30);
+        // Уровень кислорода (индикатор в игре)
+        const oxygenWidth = 120;
+        const oxygenHeight = 8;
+        const oxygenX = 10;
+        const oxygenY = 10;
         
-        // Уровень кислорода
-        ctx.fillText('Кислород:', 10, 60);
-        ctx.fillStyle = 'white';
-        ctx.fillRect(100, 45, 150, 20);
-        ctx.fillStyle = diver.oxygen > 30 ? '#2ecc71' : '#e74c3c';
-        ctx.fillRect(100, 45, (diver.oxygen / 100) * 150, 20);
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(100, 45, 150, 20);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(oxygenX, oxygenY, oxygenWidth, oxygenHeight);
         
-        // Цель игры
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.font = '16px Arial';
-        ctx.fillText(`Цель: 500 очков`, canvas.width - 120, 30);
-        
-        // Подсказка по управлению
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.font = '14px Arial';
-        if (isMobile) {
-            ctx.fillText('Касайтесь кнопок для движения', 10, canvas.height - 10);
+        if (diver.oxygen > 30) {
+            ctx.fillStyle = '#2ecc71';
+        } else if (diver.oxygen > 15) {
+            ctx.fillStyle = '#f39c12';
         } else {
-            ctx.fillText('Управление: стрелки или WASD | Подплывите к ⚡ для пополнения кислорода', 10, canvas.height - 10);
+            ctx.fillStyle = '#e74c3c';
         }
+        ctx.fillRect(oxygenX, oxygenY, (diver.oxygen / 100) * oxygenWidth, oxygenHeight);
+        
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(oxygenX, oxygenY, oxygenWidth, oxygenHeight);
     }
     
     // Функция отрисовки экрана окончания игры
     function drawGameOver() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = 'white';
-        ctx.font = '36px Arial';
+        ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
         
         if (gameWon) {
-            ctx.fillText('🎉 ПОБЕДА! 🎉', canvas.width / 2, canvas.height / 2 - 40);
-            ctx.font = '24px Arial';
-            ctx.fillText(`Вы собрали сокровищ на ${diver.score} очков!`, canvas.width / 2, canvas.height / 2);
+            ctx.fillText('🎉 ПОБЕДА!', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.font = '18px Arial';
+            ctx.fillText(`Собрано сокровищ: ${diver.score}`, canvas.width / 2, canvas.height / 2);
         } else {
-            ctx.fillText('💀 ИГРА ОКОНЧЕНА 💀', canvas.width / 2, canvas.height / 2 - 40);
-            ctx.font = '24px Arial';
-            ctx.fillText('Закончился кислород!', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('💀 КИСЛОРОД ЗАКОНЧИЛСЯ', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.font = '18px Arial';
+            ctx.fillText(`Счёт: ${diver.score}`, canvas.width / 2, canvas.height / 2);
         }
         
-        if (isMobile) {
-            ctx.fillText('Нажмите "Перезапустить"', canvas.width / 2, canvas.height / 2 + 40);
-        } else {
-            ctx.fillText('Нажмите R для перезапуска', canvas.width / 2, canvas.height / 2 + 40);
-        }
+        ctx.font = '16px Arial';
+        ctx.fillText('Нажмите "Перезапуск"', canvas.width / 2, canvas.height / 2 + 30);
         ctx.textAlign = 'left';
         
-        // Показываем кнопку перезапуска на мобильных
-        if (isMobile) {
-            restartBtn.style.display = 'block';
-        }
+        restartBtn.style.display = 'block';
+        restartBtn.textContent = '🔄 Перезапуск';
     }
     
     // Настройка мобильного управления
     function setupMobileControls() {
-        if (!isMobile) return;
-        
         const mobileButtons = {
             'ArrowUp': upBtn,
             'ArrowDown': downBtn,
@@ -421,15 +492,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Адаптация размера канваса
     function resizeCanvas() {
         const container = document.getElementById('game-container');
-        const maxWidth = Math.min(800, container.clientWidth - 40);
-        const maxHeight = Math.min(600, window.innerHeight - 200);
+        const maxWidth = Math.min(800, container.clientWidth - 20);
+        
+        // Для мобильных устройств используем большую часть экрана
+        let maxHeight;
+        if (window.innerHeight > window.innerWidth) {
+            // Портретная ориентация
+            maxHeight = Math.min(500, window.innerHeight * 0.6);
+        } else {
+            // Ландшафтная ориентация
+            maxHeight = Math.min(400, window.innerHeight * 0.8);
+        }
         
         canvas.width = maxWidth;
         canvas.height = maxHeight;
         
         // Обновляем позицию станции
-        oxygenStation.x = canvas.width - 60;
-        oxygenStation.y = canvas.height - 60;
+        oxygenStation.x = canvas.width - 50;
+        oxygenStation.y = canvas.height - 50;
+        
+        // Обновляем позицию водолаза
+        diver.x = canvas.width / 2;
+        diver.y = canvas.height - 80;
     }
     
     // Основной игровой цикл
@@ -453,14 +537,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Создание новых сокровищ
             treasureTimer++;
-            if (treasureTimer > 90 && treasures.length < 8) {
+            if (treasureTimer > 80 && treasures.length < 6) {
                 treasures.push(new Treasure());
                 treasureTimer = 0;
             }
             
             // Создание акул
             sharkTimer++;
-            if (sharkTimer > 180 && sharks.length < 3) {
+            if (sharkTimer > 150 && sharks.length < 2) {
                 sharks.push(new Shark());
                 sharkTimer = 0;
             }
@@ -474,8 +558,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (checkCollision(diverBounds, treasures[i].getBounds())) {
                     diver.score += treasures[i].value;
                     treasures.splice(i, 1);
+                    updateStats();
                     
-                    // Проверка победы
                     if (diver.score >= 500) {
                         gameWon = true;
                     }
@@ -485,9 +569,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Проверка столкновений с акулами
             for (let i = sharks.length - 1; i >= 0; i--) {
                 if (checkCollision(diverBounds, sharks[i].getBounds())) {
-                    // При столкновении с акулой теряем кислород
-                    diver.oxygen -= 20;
+                    diver.oxygen -= 15;
                     sharks.splice(i, 1);
+                    updateStats();
                     if (diver.oxygen <= 0) {
                         gameOver = true;
                     }
@@ -497,6 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Проверка столкновения со станцией кислорода
             if (checkCollision(diverBounds, oxygenStation.getBounds())) {
                 diver.refillOxygen();
+                updateStats();
             }
         }
         
@@ -519,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработчик перезапуска
     window.addEventListener('keydown', (e) => {
-        if ((gameOver || gameWon) && (e.key === 'r' || e.key === 'R' || e.key === 'к' || e.key === 'К')) {
+        if ((gameOver || gameWon) && (e.key === 'r' || e.key === 'R')) {
             restartGame();
         }
     });
@@ -530,17 +615,12 @@ document.addEventListener('DOMContentLoaded', function() {
     setupMobileControls();
     setupKeyboardControls();
     
-    // Обновляем информацию об управлении
+    // Обновляем информацию
     const controlInfo = document.getElementById('control-info');
     const restartInfo = document.getElementById('restart-info');
     
-    if (isMobile) {
-        controlInfo.textContent = 'Собирайте сокровища (💰💎🔱) и избегайте акул! Подплывайте к ⚡ для пополнения кислорода.';
-        restartInfo.textContent = 'Используйте кнопку "Перезапустить" для новой игры';
-    } else {
-        controlInfo.textContent = 'Собирайте сокровища (💰💎🔱 = 10-50 очков) и избегайте акул! Подплывайте к ⚡ для пополнения кислорода.';
-        restartInfo.textContent = 'Наберите 500 очков для победы! Нажмите R для перезапуска';
-    }
+    controlInfo.textContent = 'Собирайте сокровища (💰) и избегайте акул!';
+    restartInfo.textContent = 'Коснитесь станции 🎯 справа для кислорода';
     
     // Запуск игры
     gameLoop();
