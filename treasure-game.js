@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Создание объектов
-    let diver = new Diver();
+    let diver;
     let treasures = [];
     let sharks = [];
     let oxygenStations = [];
@@ -412,6 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas.width = maxWidth;
         canvas.height = maxHeight;
         
+        // Пересоздаем игрока если он существует
         if (diver) {
             diver.x = canvas.width / 2;
             diver.y = canvas.height - 150;
@@ -433,6 +434,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Основной игровой цикл
     function gameLoop() {
+        // Проверяем, что игра инициализирована
+        if (!diver) {
+            diver = new Diver();
+        }
+        
         // Очистка экрана
         ctx.fillStyle = WATER_COLOR;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -543,13 +549,32 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', resizeCanvas);
     
     // Инициализация
-    resizeCanvas();
-    setupMobileControls();
-    setupKeyboardControls();
+    function initGame() {
+        resizeCanvas();
+        setupMobileControls();
+        setupKeyboardControls();
+        
+        // Создаем начальные объекты
+        diver = new Diver();
+        
+        // Создаем несколько начальных сокровищ
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                treasures.push(new Treasure());
+            }, i * 500);
+        }
+        
+        // Скрываем кнопку перезапуска при старте
+        restartBtn.style.display = 'none';
+        
+        // Запускаем игровой цикл
+        gameLoop();
+    }
     
-    // Скрываем кнопку перезапуска при старте
-    restartBtn.style.display = 'none';
-    
-    // Запуск игры
-    gameLoop();
+    // Запускаем игру после полной загрузки
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGame);
+    } else {
+        initGame();
+    }
 });
